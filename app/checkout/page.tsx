@@ -26,6 +26,27 @@ export default function CheckoutPage() {
 
   const subtotal = items.reduce((s, i) => s + i.subtotal, 0);
   const total = items.length ? subtotal + SHIPPING : 0;
+  const WHATSAPP_NUMBER = "8801312322447";
+
+function buildWhatsAppMessage() {
+  const lines = [
+    "Hello BuraqGo 👋",
+    "I want to place an order:",
+    "",
+    ...items.map((i) => `- ${i.name} × ${i.qty} = ${formatBDT(i.subtotal)}`),
+    "",
+    `Shipping: ${formatBDT(SHIPPING)}`,
+    `Total: ${formatBDT(total)}`,
+    `Payment: ${method === "COD" ? "Cash on Delivery" : method === "BKASH" ? "bKash" : "Nagad"}`,
+  ];
+  return lines.join("\n");
+}
+
+function orderOnWhatsApp() {
+  const text = encodeURIComponent(buildWhatsAppMessage());
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, "_blank");
+}
+
 
   function placeOrder(e: React.FormEvent) {
     e.preventDefault();
@@ -114,9 +135,18 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            <button className="w-full rounded-2xl bg-zinc-900 px-5 py-3 text-white hover:bg-zinc-800">
-              Place Order
-            </button>
+<button
+  type="button"
+  onClick={orderOnWhatsApp}
+  className="w-full rounded-2xl bg-green-600 px-5 py-3 text-white hover:bg-green-500"
+>
+  Order on WhatsApp
+</button>
+
+<button className="w-full rounded-2xl bg-zinc-900 px-5 py-3 text-white hover:bg-zinc-800">
+  Place Order
+</button>
+
           </form>
         </>
       )}
