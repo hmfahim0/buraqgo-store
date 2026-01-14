@@ -13,7 +13,7 @@ const WHATSAPP_NUMBER = "8801312322447";
 
 // ✅ Your Google Apps Script Web App URL (ends with /exec)
 const SHEET_WEBHOOK_URL =
-  "https://script.google.com/macros/s/AKfycb1gyowjTJj5GTQUrVcf14CKE7DHB0g7h7tS3-9nZVRBnYusdHX3F08txqdYsQyILJm/exec";
+  "https://script.google.com/macros/s/AKfycby1gyowjTJj5GTQUrVcf14CKE7DHB0g7h7tS3-9nZVRBnYusdHX3FO8txqdYsQylLJm/exec";
 
 export default function CheckoutPage() {
   const [method, setMethod] = useState<"COD" | "BKASH" | "NAGAD">("COD");
@@ -93,12 +93,11 @@ export default function CheckoutPage() {
     await fetch(SHEET_WEBHOOK_URL, {
       method: "POST",
       mode: "no-cors",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: form.toString(),
     });
   }
+  
   
 
   async function placeOrder(e: React.FormEvent) {
