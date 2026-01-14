@@ -87,14 +87,19 @@ export default function CheckoutPage() {
   }
 
   async function sendOrderToGoogleSheet(order: any) {
-    // Apps Script often works best with no-cors from browser
+    const form = new URLSearchParams();
+    form.set("payload", JSON.stringify(order));
+  
     await fetch(SHEET_WEBHOOK_URL, {
       method: "POST",
       mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(order),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: form.toString(),
     });
   }
+  
 
   async function placeOrder(e: React.FormEvent) {
     e.preventDefault();
