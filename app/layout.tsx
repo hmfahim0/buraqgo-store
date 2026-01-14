@@ -28,6 +28,16 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <a
+  href="https://wa.me/8801312322447?text=Hello%20BuraqGo%20%F0%9F%91%8B%20I%20want%20to%20order."
+  target="_blank"
+  rel="noopener noreferrer"
+  className="fixed bottom-5 right-5 z-50 flex items-center gap-3 rounded-full bg-green-600 px-4 py-3 text-white shadow-lg hover:bg-green-500"
+>
+  <span className="text-lg">💬</span>
+  <span className="text-sm font-semibold">WhatsApp</span>
+</a>
+
       </body>
     </html>
   );
