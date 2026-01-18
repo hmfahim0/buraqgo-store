@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { products } from "../../data/products";
@@ -40,23 +41,51 @@ export default function CartPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-end justify-between">
-        <h1 className="text-3xl font-black">Cart</h1>
+        <h1 className="text-3xl font-black">
+          Shopping Cart{" "}
+          <span className="text-zinc-500">({items.length} items)</span>
+        </h1>
+
         <Link href="/shop" className="text-sm text-zinc-600 hover:underline">
           Continue shopping
         </Link>
       </div>
 
+      {/* Empty State */}
       {items.length === 0 ? (
-        <div className="rounded-3xl border p-6">
-          Cart is empty.{" "}
-          <Link className="underline" href="/shop">
-            Go to shop
-          </Link>
-          .
+        <div className="rounded-3xl border bg-white p-6">
+          <div className="rounded-3xl bg-zinc-50 p-10 flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <div className="mx-auto relative h-40 w-56">
+                <Image
+                  src="/cart/empty.png"
+                  alt="Empty cart"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+
+              <div className="text-lg font-semibold text-zinc-900">
+                Your cart is empty
+              </div>
+              <div className="text-sm text-zinc-600">
+                Add some toy cars from the shop to place an order.
+              </div>
+
+              <Link
+                href="/shop"
+                className="inline-block rounded-2xl bg-zinc-900 px-6 py-3 text-white hover:bg-zinc-800"
+              >
+                Go to Shop
+              </Link>
+            </div>
+          </div>
         </div>
       ) : (
         <>
+          {/* Items */}
           <div className="rounded-3xl border p-4 space-y-3">
             {items.map((i) => (
               <div
@@ -91,6 +120,7 @@ export default function CartPage() {
             ))}
           </div>
 
+          {/* Summary */}
           <div className="rounded-3xl border p-6 space-y-3">
             <div className="flex items-center justify-between text-sm text-zinc-600">
               <span>Subtotal</span>
