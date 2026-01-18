@@ -1,156 +1,147 @@
 "use client";
 
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { products } from "../../data/products";
-import { formatBDT } from "../../lib/money";
-import { getCart, updateQty, clearCart } from "../../lib/cart";
-
-const SHIPPING = 700;
+import { getCart, addToCart, type CartItem } from "../../lib/cart";
 
 export default function CartPage() {
-  const [cart, setCartState] = useState<{ id: string; qty: number }[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
-  useEffect(() => {
-    setCartState(getCart());
-  }, []);
-
-  const items = useMemo(() => {
-    return cart
-      .map((c) => {
-        const p = products.find((x) => x.id === c.id);
-        if (!p) return null;
-        return { ...p, qty: c.qty, subtotal: p.price * c.qty };
-      })
-      .filter(Boolean) as any[];
-  }, [cart]);
-
-  const subtotal = items.reduce((s, i) => s + i.subtotal, 0);
-  const total = items.length ? subtotal + SHIPPING : 0;
-
-  function setQty(id: string, qty: number) {
-    updateQty(id, qty);
-    setCartState(getCart());
+  function refreshCart() {
+    setCart(getCart());
   }
 
-  function wipe() {
-    clearCart();
-    setCartState([]);
+  useEffect(() => {
+    refreshCart();
+  }, []);
+
+  // total items count
+  const totalItems = cart.reduce((sum, i) => sum + i.qty, 0);
+
+  // total price
+  const totalPrice = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+  // decrease qty
+  function decreaseQty(id: string) {
+    const updated = cart
+      .map((item) => (item.id === id ? { ...item, qty: item.qty - 1 } : item))
+      .filter((item) => item.qty > 0);
+
+    localStorage.setItem("cart", JSON.stringify(updated));
+    refreshCart();
+  }
+
+  // increase qty (reuse addToCart)
+  function increaseQty(item: CartItem) {
+    addToCart({ ...item, qty: 1 });
+    refreshCart();
+  }
+
+  // remove item
+  function removeItem(id: string) {
+    const updated = cart.filter((item) => item.id !== id);
+    localStorage.setItem("cart", JSON.stringify(updated));
+    refreshCart();
+  }
+
+  // clear cart
+  function clearCart() {
+    localStorage.removeItem("cart");
+    refreshCart();
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-end justify-between">
-        <h1 className="text-3xl font-black">
-          Shopping Cart{" "}
-          <span className="text-zinc-500">({items.length} items)</span>
-        </h1>
-
-        <Link href="/shop" className="text-sm text-zinc-600 hover:underline">
-          Continue shopping
-        </Link>
-      </div>
-
-      {/* Empty State */}
-      {items.length === 0 ? (
-        <div className="rounded-3xl border bg-white p-6">
-          <div className="rounded-3xl bg-zinc-50 p-10 flex items-center justify-center">
-            <div className="text-center space-y-4">
-              <div className="mx-auto relative h-40 w-56">
-                <Image
-                  src="/cart/empty.png"
-                  alt="Empty cart"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-
-              <div className="text-lg font-semibold text-zinc-900">
-                Your cart is empty
-              </div>
-              <div className="text-sm text-zinc-600">
-                Add some toy cars from the shop to place an order.
-              </div>
-
-              <Link
-                href="/shop"
-                className="inline-block rounded-2xl bg-zinc-900 px-6 py-3 text-white hover:bg-zinc-800"
-              >
-                Go to Shop
-              </Link>
-            </div>
-          </div>
+    <main className="min-h-screen bg-black text-white p-8">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">Cart ({totalItems} items)</h1>
+          <Link href="/shop" className="text-yellow-400 hover:underline">
+            ← Continue Shopping
+          </Link>
         </div>
-      ) : (
-        <>
-          {/* Items */}
-          <div className="rounded-3xl border p-4 space-y-3">
-            {items.map((i) => (
-              <div
-                key={i.id}
-                className="flex items-center justify-between gap-4 border-b py-3 last:border-b-0"
-              >
-                <div className="min-w-0">
-                  <div className="font-semibold truncate">{i.name}</div>
-                  <div className="text-sm text-zinc-600">
-                    {formatBDT(i.price)}
+
+        {cart.length === 0 ? (
+          <div className="bg-white/5 rounded-xl p-10 text-center">
+            <p className="text-lg mb-4">Your cart is empty 🛒</p>
+            <Link
+              href="/shop"
+              className="inline-block bg-yellow-400 text-black px-6 py-3 rounded-lg font-semibold hover:bg-yellow-300"
+            >
+              Go to Shop
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="space-y-4">
+              {cart.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white/5 rounded-xl p-5 flex items-center justify-between"
+                >
+                  <div>
+                    <h2 className="text-lg font-semibold">{item.name}</h2>
+                    <p className="text-sm text-gray-400">৳{item.price}</p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => decreaseQty(item.id)}
+                      className="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600"
+                    >
+                      -
+                    </button>
+
+                    <span className="text-lg">{item.qty}</span>
+
+                    <button
+                      onClick={() => increaseQty(item)}
+                      className="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="font-bold">
+                      ৳{item.price * item.qty}
+                    </p>
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      className="text-red-400 text-sm hover:underline"
+                    >
+                      Remove
+                    </button>
                   </div>
                 </div>
+              ))}
+            </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    className="h-9 w-9 rounded-xl border hover:bg-zinc-50"
-                    onClick={() => setQty(i.id, Math.max(0, i.qty - 1))}
-                  >
-                    −
-                  </button>
-                  <div className="w-10 text-center font-semibold">{i.qty}</div>
-                  <button
-                    className="h-9 w-9 rounded-xl border hover:bg-zinc-50"
-                    onClick={() => setQty(i.id, i.qty + 1)}
-                  >
-                    +
-                  </button>
-                </div>
-
-                <div className="font-bold">{formatBDT(i.subtotal)}</div>
+            {/* Summary */}
+            <div className="mt-8 bg-white/5 rounded-xl p-6 flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Total Price</p>
+                <p className="text-2xl font-bold">৳{totalPrice}</p>
               </div>
-            ))}
-          </div>
 
-          {/* Summary */}
-          <div className="rounded-3xl border p-6 space-y-3">
-            <div className="flex items-center justify-between text-sm text-zinc-600">
-              <span>Subtotal</span>
-              <span>{formatBDT(subtotal)}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm text-zinc-600">
-              <span>Shipping</span>
-              <span>{formatBDT(SHIPPING)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-zinc-600">Total</span>
-              <span className="text-xl font-black">{formatBDT(total)}</span>
-            </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={clearCart}
+                  className="border border-white/20 px-5 py-2 rounded-lg hover:bg-white/10"
+                >
+                  Clear Cart
+                </button>
 
-            <Link
-              href="/checkout"
-              className="block text-center rounded-2xl bg-zinc-900 px-5 py-3 text-white hover:bg-zinc-800"
-            >
-              Checkout
-            </Link>
-
-            <button
-              onClick={wipe}
-              className="w-full rounded-2xl border px-5 py-3 hover:bg-zinc-50"
-            >
-              Clear cart
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+                <Link
+                  href="/checkout"
+                  className="bg-yellow-400 text-black px-6 py-2 rounded-lg font-semibold hover:bg-yellow-300"
+                >
+                  Checkout →
+                </Link>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </main>
   );
 }
